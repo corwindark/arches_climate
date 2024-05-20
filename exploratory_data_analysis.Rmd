@@ -1,0 +1,144 @@
+---
+title: "exploratory_data_analysis"
+author: "Corwin Dark"
+date: "2024-05-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+
+```{r}
+
+# Old data file
+#dataIn <- read.delim("data/NABR_ClimExposure", sep =  " ")
+
+
+
+# load data in
+setwd("~/dsan/spring2024/arches_climate")
+dataIn <- read.csv("data/NABR_historic.csv")
+hist_dat <- read.csv('data/hist_data.csv')
+
+dataIn <- dataIn[rowSums(is.na(dataIn)) != ncol(dataIn), ]
+dataIn <- dataIn[!duplicated(dataIn),]
+
+
+# annual collumns incorrect and need to be recalculated
+
+```
+
+```{r}
+
+annuals <- c("T_Annual", "PPT_Annual")
+dataIn <- select(dataIn, -c("T_Annual", "PPT_Annual"))
+
+
+```
+
+```{r}
+
+#d2099 <- dataIn[dataIn$year == 2099,]
+
+
+```
+
+
+```{r}
+
+uqID <- paste(dataIn$long, dataIn$lat, dataIn$year, dataIn$scenario)
+
+
+```
+
+
+```{r}
+
+dataIn$uqID <- uqID
+```
+
+```{r}
+
+uqIDs <- unique(uqID)
+# create new copy of dataframe that we will combine rows into
+cleanData <- dataIn[1,]
+
+#nrow(uqID)
+for(i in 1:length(uqIDs)) {
+  
+  if(i %% 1000 == 0){
+    print(i)
+  }
+  iter_id <- uqIDs[i]
+  iter_data <- dataIn %>% filter(uqID == iter_id)
+
+  
+    for(j in 1:ncol(iter_data)) {
+      
+      iter_col = unique(iter_data[,j])
+      
+      
+      # if all entries, NA, record NA
+      if(sum(is.na(iter_col)) == length(iter_col)) {
+        cleanData[i,j] = NA 
+        
+        
+      # if only one non-NA entry, record that  
+      } else if(sum(!is.na(iter_col)) == 1){
+        cleanData[i,j] = iter_col[!is.na(iter_col)]
+      
+      # if entries all the same, record that
+      } else if(length(unique(iter_col)) == 1) {
+        cleanData[i,j] = iter_col[1]
+      
+      # if entries conflict, print error
+      } else if(length(unique(iter_col)) > 1 ) {
+        
+        print(paste("error, i: ", str(i), " j: ", str(j)))
+        
+        print(unique(iter_col))
+        print(is.na(iter_col))
+        
+        cleanData[i,j] = NA
+      
+      }
+    
+  }
+    
+}
+
+
+```
+
+
+```{r}
+library(sf)
+#library(mapview)
+library(ggmap)
+
+
+#mapview(dataIn, xcol = "long", ycol = "lat", crs = 4269, grid = FALSE)
+xmin = -120
+xmax = -90
+ymin = 30
+ymax = 40
+
+ggplot(hist_dat, aes(x = long, y = lat)) + geom_blank() + coord_map('mercator') + annotation_raster(ggmap, xmin, xmax, ymin, ymax)
+
+```
+
+```{r}
+
+write.csv(dataIn, "hist_data.csv")
+
+```
+
+```{r}
+
+write.csv(dataIn, "rawdata.csv")
+
+```
