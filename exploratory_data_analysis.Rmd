@@ -120,6 +120,7 @@ library(sf)
 #library(mapview)
 library(ggmap)
 
+register_stadiamaps("1f3f7fe5-9ce7-4a0e-ad81-66cd97d29ee2", write = TRUE)
 
 #mapview(dataIn, xcol = "long", ycol = "lat", crs = 4269, grid = FALSE)
 xmin = -120
@@ -127,13 +128,60 @@ xmax = -90
 ymin = 30
 ymax = 40
 
+bbox <- make_bbox(long, lat, data = hist_dat)
+
+
+map <- get_stadiamap(bbox = bbox, maptype = "outdoors", zoom = 16 )
+
+ggmap(map) + geom_point(data = hist_dat, aes(x = long, y = lat))
+
 ggplot(hist_dat, aes(x = long, y = lat)) + geom_blank() + coord_map('mercator') + annotation_raster(ggmap, xmin, xmax, ymin, ymax)
 
 ```
 
 ```{r}
 
-write.csv(dataIn, "hist_data.csv")
+ggplot(data = hist_dat, aes(x = year, y = ExtremeShortTermDryStress_Summer_whole)) + geom_point()
+
+
+ggplot(data = hist_dat, aes(x = year, y = FrostDays_Winter)) + geom_point()
+
+
+ggplot(data = hist_dat, aes(x = year, y = NonDrySWA_Summer_whole)) + geom_point()
+
+
+ggplot(data = hist_dat, aes(x = year, y = PPT_Winter)) + geom_point()
+
+       
+ggplot(data = hist_dat, aes(x = year, y = PPT_Summer, color = treecanopy)) + geom_point()
+
+
+ggplot(data = hist_dat, aes(x = year, y = DrySoilDays_Summer_whole, color = treecanopy)) + geom_point()
+
+ggplot(data = hist_dat, aes(x = year, y = PPT_Summer, color = treecanopy)) + geom_point()
+
+
+```
+
+
+```{r}
+
+library(corrplot)
+library(GGally)
+
+# filter only numeric data from history dataframe
+num_hist_dat = hist_dat[,c(2,3,4,8:28)]
+
+cdat = cor(num_hist_dat)
+
+
+
+```
+
+
+```{r}
+
+write.csv(cleanData, "hist_data.csv")
 
 ```
 
