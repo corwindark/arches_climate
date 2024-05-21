@@ -42,8 +42,15 @@ dataIn <- select(dataIn, -c("T_Annual", "PPT_Annual"))
 
 ```{r}
 
-#d2099 <- dataIn[dataIn$year == 2099,]
+# create lookup table for locations
+uq_location <- paste(hist_dat$long, hist_dat$lat)
+uq_loc_table <- data.frame(id = uq_location, long = hist_dat$long, lat = hist_dat$lat)
 
+uq_loc_table <- uq_loc_table[!duplicated(uq_loc_table$id),]
+
+write.csv(uq_loc_table, "location_table.csv")
+
+ggplot()
 
 ```
 
@@ -141,26 +148,54 @@ ggplot(hist_dat, aes(x = long, y = lat)) + geom_blank() + coord_map('mercator') 
 
 ```{r}
 
+# slight upward trend
 ggplot(data = hist_dat, aes(x = year, y = ExtremeShortTermDryStress_Summer_whole)) + geom_point()
 
-
+# Severe downward trend
 ggplot(data = hist_dat, aes(x = year, y = FrostDays_Winter)) + geom_point()
 
 
+# Soil water availabikity drops greatly
 ggplot(data = hist_dat, aes(x = year, y = NonDrySWA_Summer_whole)) + geom_point()
 
 
 ggplot(data = hist_dat, aes(x = year, y = PPT_Winter)) + geom_point()
 
-       
+
+# not much of a trend       
 ggplot(data = hist_dat, aes(x = year, y = PPT_Summer, color = treecanopy)) + geom_point()
 
-
+# slight increase in avg?
 ggplot(data = hist_dat, aes(x = year, y = DrySoilDays_Summer_whole, color = treecanopy)) + geom_point()
 
-ggplot(data = hist_dat, aes(x = year, y = PPT_Summer, color = treecanopy)) + geom_point()
+#  Dramatic uptick
+ggplot(data = hist_dat, aes(x = year, y = T_Summer, color = treecanopy)) + geom_point()
+
+# Dramatic downtick in recent years
+ggplot(data = hist_dat, aes(x = year, y = VWC_Winter_whole, color = treecanopy)) + geom_point()
+
+# not much discernable, avg might be dropping slightly though
+ggplot(data = hist_dat, aes(x = year, y = VWC_Summer_whole, color = treecanopy)) + geom_point()
+
+# Not clear trend
+ggplot(data = hist_dat, aes(x = year, y = VWC_Fall_whole, color = treecanopy)) + geom_point()
 
 
+```
+
+```{r}
+
+
+# now let's try with avg curve of VWC
+vwc_avg <- hist_dat %>%
+  group_by(year) %>%
+  summarise(winter_avg = mean(VWC_Winter_whole), spring_avg = mean(VWC_Spring_whole), summer_avg = mean(VWC_Summer_whole), fall_avg = mean(VWC_Fall_whole))
+
+
+vwc_avg = pivot_longer(vwc_avg, cols = 'winter_avg':'fall_avg', names_to = 'season', values_to = 'VWC')
+
+
+ggplot(data = vwc_avg, aes(x = season, y = VWC, color = year)) + geom_line()
 ```
 
 
