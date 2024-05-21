@@ -225,3 +225,34 @@ write.csv(cleanData, "hist_data.csv")
 write.csv(dataIn, "rawdata.csv")
 
 ```
+
+
+```{r}
+
+hist_dat$shrubland <- hist_dat$Ann_Herb + hist_dat$Herb + hist_dat$Shrub + hist_dat$Litter
+hist_dat$uq_loc <- uq_location
+
+hist_dat$drydays <- hist_dat$DrySoilDays_Summer_whole > 0
+
+tempDF <- hist_dat %>%
+  filter(year == 1980)
+
+temp2018 <- hist_dat %>%
+  filter(year == 2018 )
+
+sum(as.numeric(temp2018$drydays))
+sum(as.numeric(tempDF$drydays))
+
+uq_loc_table$shrubland <- tempDF$shrubland
+uq_loc_table$treecover <- tempDF$treecanopy
+uq_loc_table$barren <- tempDF$Bare
+uq_loc_table$dry2018 <- temp2018$DrySoilDays_Summer_whole
+uq_loc_table$dry1980 <- tempDF$DrySoilDays_Summer_whole
+uq_loc_table$frost2018 <- temp2018$FrostDays_Winter
+uq_loc_table$frost1980 <- tempDF$FrostDays_Winter
+uq_loc_table$summerT2018 <- temp2018$T_Summer
+uq_loc_table$summerT1980 <- tempDF$T_Summer
+
+
+write.csv(uq_loc_table, 'vizdatasave.csv')
+```
